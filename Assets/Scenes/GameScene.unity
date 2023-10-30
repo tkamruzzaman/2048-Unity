@@ -123,6 +123,37 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &377691723
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 377691724}
+  m_Layer: 0
+  m_Name: Board
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &377691724
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 377691723}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -204,7 +235,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.33333334, g: 0.38431373, b: 0.4392157, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -226,10 +257,10 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 1000
+  far clip plane: 100
   field of view: 34
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 3
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -341,4 +372,74 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &746381325
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 746381327}
+  - component: {fileID: 746381326}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &746381326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 746381325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82439ca013c5cf948aa8f002ac7c5ca9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boardPrefab: {fileID: 1187338846245001048, guid: 6f896e9754665ad41a9be45a5e52ac8c, type: 3}
+  nodePrefab: {fileID: 8388903502825748619, guid: ee066d53f08ce754a8a67fc28dfdb9e2, type: 3}
+  blockPrefab: {fileID: 1990576220668746694, guid: f780116ed55428a4ba27151bcdd4440a, type: 3}
+  blockTypeList:
+  - <Value>k__BackingField: 2
+    <Color>k__BackingField: {r: 0.8745098, g: 0.4, b: 0.7372549, a: 1}
+  - <Value>k__BackingField: 4
+    <Color>k__BackingField: {r: 0.54133385, g: 1, b: 0.08962262, a: 1}
+  - <Value>k__BackingField: 8
+    <Color>k__BackingField: {r: 0.22745098, g: 0.72156864, b: 0.79607844, a: 1}
+  - <Value>k__BackingField: 16
+    <Color>k__BackingField: {r: 0.21176471, g: 0.5019608, b: 0.85882354, a: 1}
+  - <Value>k__BackingField: 32
+    <Color>k__BackingField: {r: 0.9098039, g: 0.4117647, b: 0.2784314, a: 1}
+  - <Value>k__BackingField: 64
+    <Color>k__BackingField: {r: 0.54509807, g: 0.5019608, b: 0.9843137, a: 1}
+  - <Value>k__BackingField: 128
+    <Color>k__BackingField: {r: 0.5882353, g: 0.5372549, b: 0.5019608, a: 1}
+  - <Value>k__BackingField: 256
+    <Color>k__BackingField: {r: 1, g: 0.6784314, b: 0.16078432, a: 1}
+  - <Value>k__BackingField: 512
+    <Color>k__BackingField: {r: 0.99607843, g: 0.39215687, b: 0.44705883, a: 1}
+  - <Value>k__BackingField: 1024
+    <Color>k__BackingField: {r: 0.76862746, g: 0.16470589, b: 0.03529412, a: 1}
+  - <Value>k__BackingField: 2048
+    <Color>k__BackingField: {r: 0.827451, g: 0.23529412, b: 0.9254902, a: 1}
+--- !u!4 &746381327
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 746381325}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
