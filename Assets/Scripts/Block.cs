@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -9,9 +7,13 @@ public class Block : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private TMP_Text text;
 
-    private BlockType blockType;
-    private int value;
-    private Color color;
+    public Vector2 Position => transform.position;
+    public BlockType BlockType { get; private set; }
+    public int Value { get; private set; }
+    public Color Color { get; private set; }
+    public Node OccupiedNode { get; private set; }
+    public Block BlockToMergeWith { get; private set; }
+    public bool IsMerging { get; private set; }
 
     private void Awake()
     {
@@ -21,11 +23,35 @@ public class Block : MonoBehaviour
 
     public void Init(BlockType blockType)
     {
-        this.blockType = blockType;
-        value = blockType.Value;
-        color = blockType.Color;
+        BlockType = blockType;
+        Value = blockType.Value;
+        Color = blockType.Color;
 
-        spriteRenderer.color = color;
-        text.text = value.ToString();
+        spriteRenderer.color = Color;
+        text.text = Value.ToString();
     }
+
+    public void SetBlock(Node node)
+    {
+        if (OccupiedNode != null)
+        {
+            OccupiedNode.SetOccupingBlock(null);
+        }
+
+        OccupiedNode = node;
+        OccupiedNode.SetOccupingBlock(this);
+    }
+
+    public void MergeBlock(Block blockToMergeWith)
+    {
+        //set the block we are merging with
+        BlockToMergeWith = blockToMergeWith;
+        //set current node as unoccupied, to allow other blocks to use it
+        OccupiedNode.SetOccupingBlock(null);
+        //set the base block as merging, so it does not get used more than once
+        blockToMergeWith.IsMerging = true;
+    }
+
+    public bool CanMerge(int value) => value == Value && !IsMerging && BlockToMergeWith == null;
+
 }

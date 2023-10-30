@@ -402,9 +402,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82439ca013c5cf948aa8f002ac7c5ca9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boardPrefab: {fileID: 1187338846245001048, guid: 6f896e9754665ad41a9be45a5e52ac8c, type: 3}
-  nodePrefab: {fileID: 8388903502825748619, guid: ee066d53f08ce754a8a67fc28dfdb9e2, type: 3}
-  blockPrefab: {fileID: 1990576220668746694, guid: f780116ed55428a4ba27151bcdd4440a, type: 3}
+  boardPrefab: {fileID: 5570365456049663533, guid: 6f896e9754665ad41a9be45a5e52ac8c, type: 3}
+  nodePrefab: {fileID: 2391054826496904871, guid: ee066d53f08ce754a8a67fc28dfdb9e2, type: 3}
+  blockPrefab: {fileID: 8883259162774759113, guid: f780116ed55428a4ba27151bcdd4440a, type: 3}
+  boardTransform: {fileID: 377691724}
   blockTypeList:
   - <Value>k__BackingField: 2
     <Color>k__BackingField: {r: 0.8745098, g: 0.4, b: 0.7372549, a: 1}

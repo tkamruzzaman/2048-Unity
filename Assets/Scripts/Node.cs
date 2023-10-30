@@ -1,10 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
+//#define TESTING
 using UnityEngine;
 
 [SelectionBase]
 public class Node : MonoBehaviour
 {
-    public Vector3 Position => transform.position;
-    public Block OccupiedBlock { get; private set; }
+    public Vector2 Position => transform.position;
+    public Block OccupingBlock { get; private set; }
+
+    public void SetOccupingBlock(Block block)
+    {
+        OccupingBlock = block;
+    }
+
+#if TESTING
+    private void Update()
+    {
+        SpriteRenderer spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        if (OccupingBlock == null) { spriteRenderer.color = Color.white; }
+        else { spriteRenderer.color = Color.gray; }
+    }
+#endif
+
 }
