@@ -5,9 +5,9 @@ using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class GameManager : MonoBehaviour
+public partial class GameManager : MonoBehaviour
 {
-    [SerializeField] private SpriteRenderer boardPrefab;
+    [SerializeField] private Board boardPrefab;
     [SerializeField] private Node nodePrefab;
     [SerializeField] private Block blockPrefab;
     [Space]
@@ -15,43 +15,33 @@ public class GameManager : MonoBehaviour
     [Space]
     [SerializeField] private List<BlockType> blockTypeList;
 
-    private const int width = 4;
-    private const int height = 4;
     private const int winCondition = 2048;
 
-    private int round;
+    private int gameRound;
 
     private List<Node> nodeList;
     private List<Block> blockList;
 
-    public Vector2 Center { get; private set; }
-
-    private enum GameState
-    {
-        GenerateLevel,
-        SpawningBlocks,
-        WaitingInputs,
-        Moving,
-        Win,
-        Lose,
-    }
+    private Board board;
 
     private GameState gameState;
 
     private void ChangeState(GameState newGameState)
     {
         gameState = newGameState;
-        //print(gameState.ToString());
 
         switch (gameState)
         {
-            case GameState.GenerateLevel:
+            case GameState.GenerateBoard:
                 SetUpGame();
                 break;
-            case GameState.SpawningBlocks:
-                SpawnBlocks(round++ == 0 ? 2 : 1);
+            case GameState.GenetateGrid:
+                GenerateGrid();
                 break;
-            case GameState.WaitingInputs:
+            case GameState.SpawningBlocks:
+                SpawnBlocks(GetBlockAmount());
+                break;
+            case GameState.WaitingInput:
                 break;
             case GameState.Moving:
                 break;
@@ -64,57 +54,47 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        ChangeState(GameState.GenerateLevel);
+        ChangeState(GameState.GenerateBoard);
     }
 
     private void Update()
     {
-        if (gameState != GameState.WaitingInputs) { return; }
+        if (gameState != GameState.WaitingInput) { return; }
 
-        if (Input.GetKeyDown(KeyCode.LeftArrow)) { Shift(Vector2.left); }
-        if (Input.GetKeyDown(KeyCode.RightArrow)) { Shift(Vector2.right); }
-        if (Input.GetKeyDown(KeyCode.UpArrow)) { Shift(Vector2.up); }
-        if (Input.GetKeyDown(KeyCode.DownArrow)) { Shift(Vector2.down); }
+        Shift(InputManager.Instance.GetMoveDirectionVector());
     }
 
     private void SetUpGame()
     {
-        round = 0;
+        gameRound = 0;
         nodeList = new();
         blockList = new();
 
-        PlaceCamera();
         SpawnBoard();
-        GenerateGrid();
 
-        ChangeState(GameState.SpawningBlocks);
-    }
-
-    private void PlaceCamera()
-    {
-        Center = new Vector3(width / 2, height / 2, 0);
-        Camera.main.transform.position = new Vector3(Center.x, Center.y, -10f);
+        ChangeState(GameState.GenetateGrid);
     }
 
     private void SpawnBoard()
     {
-        SpriteRenderer boardSpriteRenderer = Instantiate(boardPrefab, Center, Quaternion.identity);
-
-        boardTransform = boardSpriteRenderer.transform;
-        boardSpriteRenderer.size = new Vector2(width, height);
+        board = Instantiate(boardPrefab);
+        boardTransform = board.transform;
+        board.Init();
     }
 
     private void GenerateGrid()
     {
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < board.Width; x++)
         {
-            for (int y = 0; y < height; y++)
+            for (int y = 0; y < board.Height; y++)
             {
                 float offSetFromCenter = 0.5f;
                 Node node = Instantiate(nodePrefab, new Vector2(x + offSetFromCenter, y + offSetFromCenter), Quaternion.identity, boardTransform);
                 nodeList.Add(node);
             }
         }
+
+        ChangeState(GameState.SpawningBlocks);
     }
 
     private void SpawnBlocks(int amount)
@@ -123,17 +103,22 @@ public class GameManager : MonoBehaviour
 
         foreach (Node node in freeNodes.Take(amount))
         {
-            SpawnBlock(node, Random.value > 0.8f ? 4 : 2);
+            SpawnBlock(node, GetBlockValue());
         }
 
         if (freeNodes.Count == 1)
         {
+            bool anyDuplicate = nodeList.GroupBy(node => node.OccupingBlock.Value).Any(group => group.Count() > 1);
+
             //Lost the game
             ChangeState(GameState.Lose);
             return;
+
         }
 
-        ChangeState(blockList.Any(block => block.Value == winCondition) ? GameState.Win : GameState.WaitingInputs);
+        gameRound++;
+
+        ChangeState(blockList.Any(block => block.Value == winCondition) ? GameState.Win : GameState.WaitingInput);
     }
 
     private void SpawnBlock(Node node, int value)
@@ -146,7 +131,8 @@ public class GameManager : MonoBehaviour
 
     private void Shift(Vector2 direction)
     {
-        Console.Clear();
+        if (direction == Vector2.zero) { return; }    //stop it from auto playing
+
         ChangeState(GameState.Moving);
 
         List<Block> orderedBlockList = blockList.OrderBy(block => block.Position.x).ThenBy(block => block.Position.y).ToList();
@@ -206,7 +192,6 @@ public class GameManager : MonoBehaviour
         });
     }
 
-
     private void MergeBlocks(Block baseBlock, Block mergingBlock)
     {
         int newValue = baseBlock.Value * 2;
@@ -222,9 +207,22 @@ public class GameManager : MonoBehaviour
         Destroy(block.gameObject);
     }
 
+    private int GetBlockAmount() => gameRound == 0 ? 2 : 1;
+
+    private int GetBlockValue() => Random.value > (gameRound == 0 ? 0.6f : 0.8f) ? 4 : 2;
+
     private Node GetNodeAtPosition(Vector2 position) => nodeList.FirstOrDefault(node => node.Position == position);
 
     private BlockType GetBlockTypeByValue(int value) => blockTypeList.First(type => type.Value == value);
 
 
 }
+
+
+//TODO: continious input => done
+//TODO: starting can have (2,2)/(2,4)/(4,4) blocks => done
+//TODO: if no move and/or no merge == no new spawn
+//TODO: add game loop
+//TODO: add sound and music
+//TODO: game Over login bug fix
+//TODO: support generic 
