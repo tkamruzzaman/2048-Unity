@@ -26,6 +26,10 @@ public partial class GameManager : MonoBehaviour
 
     private GameState gameState;
 
+    private bool isMerging;
+    private bool isMoving;
+    private bool isToSkipSpawning;
+
     private void ChangeState(GameState newGameState)
     {
         gameState = newGameState;
@@ -99,6 +103,13 @@ public partial class GameManager : MonoBehaviour
 
     private void SpawnBlocks(int amount)
     {
+        if (isToSkipSpawning)
+        {
+            //isToSkipSpawning = false;
+            ChangeState(GameState.WaitingInput);
+            return;
+        }
+
         List<Node> freeNodes = nodeList.Where(node => node.OccupingBlock == null).OrderBy(node => Random.value).ToList();
 
         foreach (Node node in freeNodes.Take(amount))
@@ -142,6 +153,8 @@ public partial class GameManager : MonoBehaviour
             orderedBlockList.Reverse();
         }
 
+        isMerging = isMoving = isToSkipSpawning = false;
+
         foreach (Block block in orderedBlockList)
         {
             Node next = block.OccupiedNode;
@@ -156,18 +169,18 @@ public partial class GameManager : MonoBehaviour
                         && possibleNode.OccupingBlock.CanMerge(block.Value))
                     {
                         //two blocks can marge
-
-                        print("marge");
+                        isMerging = true;
                         block.MergeBlock(possibleNode.OccupingBlock);
 
                     }
                     else if (possibleNode.OccupingBlock == null)
                     {
                         //move to the next node
-                        print(".........next");
+                        isMoving = true;
                         next = possibleNode;
                     }
-                    print("+++++++++++++++++++");
+
+                    isToSkipSpawning = !(isMerging || isMoving); //N-OR
                 }
             } while (next != block.OccupiedNode);
         }
@@ -221,7 +234,7 @@ public partial class GameManager : MonoBehaviour
 
 //TODO: continious input => done
 //TODO: starting can have (2,2)/(2,4)/(4,4) blocks => done
-//TODO: if no move and/or no merge == no new spawn
+//TODO: if no move and/or no merge == no new spawn => done
 //TODO: add game loop
 //TODO: add sound and music
 //TODO: game Over login bug fix
