@@ -10,7 +10,8 @@ public class Block : MonoBehaviour
     public Vector2 Position => transform.position;
     public BlockType BlockType { get; private set; }
     public int Value { get; private set; }
-    public Color Color { get; private set; }
+    public Color BlockColor { get; private set; }
+    public Color TextColor { get; private set; }
     public Node OccupiedNode { get; private set; }
     public Block BlockToMergeWith { get; private set; }
     public bool IsMerging { get; private set; }
@@ -25,10 +26,12 @@ public class Block : MonoBehaviour
     {
         BlockType = blockType;
         Value = blockType.Value;
-        Color = blockType.Color;
+        BlockColor = blockType.BlockColor;
+        TextColor = blockType.TextColor;
 
-        spriteRenderer.color = Color;
+        spriteRenderer.color = BlockColor;
         text.text = Value.ToString();
+        text.color = TextColor;
     }
 
     public void SetBlock(Node node)

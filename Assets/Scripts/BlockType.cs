@@ -8,5 +8,8 @@ public struct BlockType
     public int Value { get; private set; }
 
     [field: SerializeField]
-    public Color Color { get; private set; }
+    public Color BlockColor { get; private set; }
+
+    [field: SerializeField]
+    public Color TextColor { get; private set; }
 }
