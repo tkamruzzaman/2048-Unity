@@ -7,6 +7,18 @@ using Random = UnityEngine.Random;
 
 public partial class GameManager : MonoBehaviour
 {
+    public static GameManager Instance { get; private set; }
+
+    public event EventHandler OnGameReload;
+
+    public event EventHandler<OnBlocksMergedEventArgs> OnBlocksMerged;
+    public class OnBlocksMergedEventArgs : EventArgs
+    {
+        public Block BlockA;
+        public Block BlockB;
+        public int newValue;
+    }
+
     [SerializeField] private Board boardPrefab;
     [SerializeField] private Node nodePrefab;
     [SerializeField] private Block blockPrefab;
@@ -19,8 +31,8 @@ public partial class GameManager : MonoBehaviour
 
     private int gameRound;
 
-    private List<Node> nodeList;
-    private List<Block> blockList;
+   [SerializeField] private List<Node> nodeList;
+   [SerializeField] private List<Block> blockList;
 
     private Board board;
 
@@ -29,6 +41,29 @@ public partial class GameManager : MonoBehaviour
     private bool isMerging;
     private bool isMoving;
     private bool isToSkipSpawning;
+
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Debug.LogError("There's more than one GameManager" + transform + " - " + Instance);
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    private void Start()
+    {
+        ChangeState(GameState.GenerateBoard);
+    }
+
+    private void Update()
+    {
+        if (gameState != GameState.WaitingInput) { return; }
+
+        Shift(InputManager.Instance.GetMoveDirectionVector());
+    }
 
     private void ChangeState(GameState newGameState)
     {
@@ -54,18 +89,6 @@ public partial class GameManager : MonoBehaviour
             case GameState.Lose:
                 break;
         }
-    }
-
-    private void Start()
-    {
-        ChangeState(GameState.GenerateBoard);
-    }
-
-    private void Update()
-    {
-        if (gameState != GameState.WaitingInput) { return; }
-
-        Shift(InputManager.Instance.GetMoveDirectionVector());
     }
 
     private void SetUpGame()
@@ -212,6 +235,13 @@ public partial class GameManager : MonoBehaviour
 
         RemoveBlock(baseBlock);
         RemoveBlock(mergingBlock);
+
+        OnBlocksMerged?.Invoke(this, new OnBlocksMergedEventArgs
+        {
+            BlockA = baseBlock,
+            BlockB = mergingBlock,
+            newValue = newValue
+        });
     }
 
     private void RemoveBlock(Block block)
@@ -228,7 +258,33 @@ public partial class GameManager : MonoBehaviour
 
     private BlockType GetBlockTypeByValue(int value) => blockTypeList.First(type => type.Value == value);
 
+    [ContextMenu("ReloadLevel")]
+    public void ReloadLevel()
+    {
+        for (int i = 0; i < nodeList.Count; i++)
+        {
+            Destroy(nodeList[i].gameObject);
+        }
 
+        for (int i = 0; i < blockList.Count; i++)
+        {
+            Destroy(blockList[i].gameObject);
+        }
+
+        Destroy(boardTransform.gameObject);
+
+        blockList.Clear();
+        nodeList.Clear();
+
+        isMerging = isMoving = isToSkipSpawning = false;
+
+        board = null;
+        gameRound = 0;
+
+        ChangeState(GameState.GenerateBoard);
+
+        OnGameReload?.Invoke(this, EventArgs.Empty);
+    }
 }
 
 
