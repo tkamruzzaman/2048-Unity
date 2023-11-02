@@ -11,6 +11,8 @@ public partial class GameManager : MonoBehaviour
 
     public event EventHandler OnGameReload;
 
+    public event EventHandler<bool> OnGameOver;
+
     public event EventHandler<OnBlocksMergedEventArgs> OnBlocksMerged;
     public class OnBlocksMergedEventArgs : EventArgs
     {
@@ -27,12 +29,11 @@ public partial class GameManager : MonoBehaviour
     [Space]
     [SerializeField] private List<BlockType> blockTypeList;
 
-    private const int winCondition = 2048;
-
+    private int winCondition;
     private int gameRound;
 
-   [SerializeField] private List<Node> nodeList;
-   [SerializeField] private List<Block> blockList;
+    [SerializeField] private List<Node> nodeList;
+    [SerializeField] private List<Block> blockList;
 
     private Board board;
 
@@ -51,6 +52,8 @@ public partial class GameManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        winCondition = blockTypeList[^1].Value;
     }
 
     private void Start()
@@ -85,8 +88,10 @@ public partial class GameManager : MonoBehaviour
             case GameState.Moving:
                 break;
             case GameState.Win:
+                OnGameOver?.Invoke(this, true);
                 break;
             case GameState.Lose:
+                OnGameOver?.Invoke(this, false);
                 break;
         }
     }
@@ -116,7 +121,13 @@ public partial class GameManager : MonoBehaviour
             for (int y = 0; y < board.Height; y++)
             {
                 float offSetFromCenter = 0.5f;
-                Node node = Instantiate(nodePrefab, new Vector2(x + offSetFromCenter, y + offSetFromCenter), Quaternion.identity, boardTransform);
+                Node node = Instantiate(nodePrefab,
+                    new Vector2(x + offSetFromCenter, y + offSetFromCenter),
+                    Quaternion.identity, boardTransform);
+
+                GridPosition gridPosition = new(x, y);
+                board.AddNodeToGridPosition(gridPosition, node);
+                node.InitNode(gridPosition);
                 nodeList.Add(node);
             }
         }
@@ -128,7 +139,6 @@ public partial class GameManager : MonoBehaviour
     {
         if (isToSkipSpawning)
         {
-            //isToSkipSpawning = false;
             ChangeState(GameState.WaitingInput);
             return;
         }
@@ -142,18 +152,73 @@ public partial class GameManager : MonoBehaviour
 
         if (freeNodes.Count == 1)
         {
-            bool anyDuplicate = nodeList.GroupBy(node => node.OccupingBlock.Value).Any(group => group.Count() > 1);
-
-            //Lost the game
-            ChangeState(GameState.Lose);
-            return;
-
+            if (!IsAnyMoveAvailable())
+            {
+                //Lost the game
+                ChangeState(GameState.Lose);
+                return;
+            }
         }
 
         gameRound++;
 
         ChangeState(blockList.Any(block => block.Value == winCondition) ? GameState.Win : GameState.WaitingInput);
     }
+
+    private bool IsAnyMoveAvailable()
+    {
+        List<GridPosition> validGridPositionList = new();
+
+        int maxTestDistance = 1;
+        foreach (Block block in blockList)
+        {
+            GridPosition blockGridPosition = block.OccupiedNode.GridPosition;
+
+            for (int x = -maxTestDistance; x <= maxTestDistance; x++)
+            {
+                for (int y = -maxTestDistance; y <= maxTestDistance; y++)
+                {
+                    GridPosition offsetGridPosition = new(x, y);
+                    GridPosition testGridPosition = blockGridPosition + offsetGridPosition;
+
+                    if (Mathf.Abs(x) == Mathf.Abs(y))
+                    {
+                        //diagonal value
+                        continue;
+                    }
+
+                    if (!board.IsValidGridPosition(testGridPosition))
+                    {
+                        //invalid GridPosition
+                        continue;
+                    }
+
+                    Block targetBlock = board.GetNodeAtGridPosition(testGridPosition).OccupingBlock;
+                    if (targetBlock == null)
+                    {
+                        //No block on the node
+                        continue;
+                    }
+
+                    if (targetBlock == block)
+                    {
+                        //same block
+                        continue;
+                    }
+
+                    if (targetBlock.Value != block.Value)
+                    {
+                        //Can not be matched
+                        continue;
+                    }
+
+                    validGridPositionList.Add(testGridPosition);
+                }
+            }
+        }
+        return validGridPositionList.Count > 0;
+    }
+
 
     private void SpawnBlock(Node node, int value)
     {
@@ -291,7 +356,7 @@ public partial class GameManager : MonoBehaviour
 //TODO: continious input => done
 //TODO: starting can have (2,2)/(2,4)/(4,4) blocks => done
 //TODO: if no move and/or no merge == no new spawn => done
-//TODO: add game loop
+//TODO: add game loop => done
 //TODO: add sound and music
-//TODO: game Over login bug fix
+//TODO: game Over logic bug fix => done
 //TODO: support generic 

@@ -5,12 +5,11 @@ using UnityEngine;
 public class Node : MonoBehaviour
 {
     public Vector2 Position => transform.position;
+    public GridPosition GridPosition { get; private set; }
     public Block OccupingBlock { get; private set; }
 
-    public void SetOccupingBlock(Block block)
-    {
-        OccupingBlock = block;
-    }
+    public void InitNode(GridPosition gridPosition) => GridPosition = gridPosition;
+    public void SetOccupingBlock(Block block) => OccupingBlock = block;
 
 #if TESTING
     private void Update()
