@@ -21,11 +21,15 @@ public partial class GameManager : MonoBehaviour
         public int newValue;
     }
 
+    public event EventHandler OnAnyBlockMerged;
+    public event EventHandler OnValidMove;
+    public event EventHandler OnInvalidMove;
+
     [SerializeField] private Board boardPrefab;
     [SerializeField] private Node nodePrefab;
     [SerializeField] private Block blockPrefab;
     [Space]
-    [SerializeField] private Transform boardTransform;
+    [SerializeField] private Transform boardParentTransform;
     [Space]
     [SerializeField] private List<BlockType> blockTypeList;
 
@@ -41,7 +45,7 @@ public partial class GameManager : MonoBehaviour
 
     private bool isMerging;
     private bool isMoving;
-    private bool isToSkipSpawning;
+    private bool isValidInput;
 
     private void Awake()
     {
@@ -53,7 +57,7 @@ public partial class GameManager : MonoBehaviour
         }
         Instance = this;
 
-        winCondition = blockTypeList[^1].Value;
+        winCondition = blockTypeList[^1].Value; //last value of the list 
     }
 
     private void Start()
@@ -109,8 +113,7 @@ public partial class GameManager : MonoBehaviour
 
     private void SpawnBoard()
     {
-        board = Instantiate(boardPrefab);
-        boardTransform = board.transform;
+        board = Instantiate(boardPrefab, boardParentTransform);
         board.Init();
     }
 
@@ -123,7 +126,7 @@ public partial class GameManager : MonoBehaviour
                 float offSetFromCenter = 0.5f;
                 Node node = Instantiate(nodePrefab,
                     new Vector2(x + offSetFromCenter, y + offSetFromCenter),
-                    Quaternion.identity, boardTransform);
+                    Quaternion.identity, boardParentTransform);
 
                 GridPosition gridPosition = new(x, y);
                 board.AddNodeToGridPosition(gridPosition, node);
@@ -137,7 +140,7 @@ public partial class GameManager : MonoBehaviour
 
     private void SpawnBlocks(int amount)
     {
-        if (isToSkipSpawning)
+        if (isValidInput)
         {
             ChangeState(GameState.WaitingInput);
             return;
@@ -219,10 +222,9 @@ public partial class GameManager : MonoBehaviour
         return validGridPositionList.Count > 0;
     }
 
-
     private void SpawnBlock(Node node, int value)
     {
-        Block block = Instantiate(blockPrefab, node.Position, Quaternion.identity);
+        Block block = Instantiate(blockPrefab, node.Position, Quaternion.identity, boardParentTransform);
         block.Init(GetBlockTypeByValue(value));
         block.SetBlock(node);
         blockList.Add(block);
@@ -241,7 +243,7 @@ public partial class GameManager : MonoBehaviour
             orderedBlockList.Reverse();
         }
 
-        isMerging = isMoving = isToSkipSpawning = false;
+        isMerging = isMoving = isValidInput = false;
 
         foreach (Block block in orderedBlockList)
         {
@@ -268,10 +270,13 @@ public partial class GameManager : MonoBehaviour
                         next = possibleNode;
                     }
 
-                    isToSkipSpawning = !(isMerging || isMoving); //N-OR
+                    isValidInput = !(isMerging || isMoving); //N-OR
                 }
             } while (next != block.OccupiedNode);
         }
+
+        if (isValidInput) { OnInvalidMove?.Invoke(this, EventArgs.Empty); }
+        else { OnValidMove?.Invoke(this, EventArgs.Empty); }
 
         Sequence sequence = DOTween.Sequence();
         float blockTravelTime = 0.2f;
@@ -288,14 +293,21 @@ public partial class GameManager : MonoBehaviour
             {
                 MergeBlocks(block.BlockToMergeWith, block);
             }
-
+            if (margeBlockList.Any()) 
+            {
+                //at least one block merge
+                OnAnyBlockMerged?.Invoke(this, EventArgs.Empty);
+            }
             ChangeState(GameState.SpawningBlocks);
         });
+
+        //SoundManager.playmove();
     }
 
     private void MergeBlocks(Block baseBlock, Block mergingBlock)
     {
         int newValue = baseBlock.Value * 2;
+
         SpawnBlock(baseBlock.OccupiedNode, newValue);
 
         RemoveBlock(baseBlock);
@@ -321,7 +333,7 @@ public partial class GameManager : MonoBehaviour
 
     private Node GetNodeAtPosition(Vector2 position) => nodeList.FirstOrDefault(node => node.Position == position);
 
-    private BlockType GetBlockTypeByValue(int value) => blockTypeList.First(type => type.Value == value);
+    public BlockType GetBlockTypeByValue(int value) => blockTypeList.First(type => type.Value == value);
 
     [ContextMenu("ReloadLevel")]
     public void ReloadLevel()
@@ -336,12 +348,12 @@ public partial class GameManager : MonoBehaviour
             Destroy(blockList[i].gameObject);
         }
 
-        Destroy(boardTransform.gameObject);
+        //Destroy(board.gameObject);
 
         blockList.Clear();
         nodeList.Clear();
 
-        isMerging = isMoving = isToSkipSpawning = false;
+        isMerging = isMoving = isValidInput = false;
 
         board = null;
         gameRound = 0;
@@ -357,6 +369,6 @@ public partial class GameManager : MonoBehaviour
 //TODO: starting can have (2,2)/(2,4)/(4,4) blocks => done
 //TODO: if no move and/or no merge == no new spawn => done
 //TODO: add game loop => done
-//TODO: add sound and music
+//TODO: add sound and music => done
 //TODO: game Over logic bug fix => done
 //TODO: support generic 

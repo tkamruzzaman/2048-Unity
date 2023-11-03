@@ -11,7 +11,6 @@ public class Board : MonoBehaviour
     private SpriteRenderer spriteRenderer;
 
     private Dictionary<GridPosition, Node> nodeDictionary;
-    private List <Node> nodes = new List <Node>();
 
     private void Awake()
     {
@@ -31,21 +30,17 @@ public class Board : MonoBehaviour
         nodeDictionary.Clear();
     }
 
-    public void AddNodeToGridPosition(GridPosition gridPosition, Node node)
-    {
-        nodeDictionary.Add(gridPosition, node);
-    }
-
-    public Node GetNodeAtGridPosition(GridPosition gridPosition)
-    {
-        return nodeDictionary.TryGetValue(gridPosition, out Node node) ? node: null;
-    } 
-
-    private void SetPosition()=> transform.position = Center;
+    private void SetPosition() => transform.position = Center;
 
     private void SetSize() => spriteRenderer.size = new Vector2(Width, Height);
 
     private void PlaceCamera() => Camera.main.transform.position = new Vector3(Center.x, Center.y, -10f);
+
+    public void AddNodeToGridPosition(GridPosition gridPosition, Node node) 
+        => nodeDictionary.Add(gridPosition, node);
+
+    public Node GetNodeAtGridPosition(GridPosition gridPosition) 
+        => nodeDictionary.TryGetValue(gridPosition, out Node node) ? node : null;
 
     public bool IsValidGridPosition(GridPosition gridPosition)
     => gridPosition.x >= 0

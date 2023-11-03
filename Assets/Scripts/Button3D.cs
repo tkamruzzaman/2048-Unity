@@ -16,6 +16,4 @@ public class Button3D : MonoBehaviour
 
     private void OnMouseUp() => OnButtonPressed?.Invoke();
 
-
-
 }
