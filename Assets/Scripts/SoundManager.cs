@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -54,8 +55,12 @@ public class SoundManager : MonoBehaviour
         PlaySound(mergeAudioClips[Random.Range(0, mergeAudioClips.Length)], 0.5f);
     }
 
-    private void PlaySound(AudioClip audioClip, float volumeScale) => audioSource.PlayOneShot(audioClip, volumeScale);
+    private void PlaySound(AudioClip audioClip, float volumeScale)
+    {
+        if (!IsToPlaySounds) { return; }
 
+        audioSource.PlayOneShot(audioClip, volumeScale);
+    }
     public void ToggleSound() => IsToPlaySounds = !IsToPlaySounds;
 
     private void OnDestroy()
