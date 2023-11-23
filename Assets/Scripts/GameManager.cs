@@ -32,16 +32,16 @@ public partial class GameManager : MonoBehaviour
     [SerializeField] private Transform boardParentTransform;
     [Space]
     [SerializeField] private List<BlockType> blockTypeList;
-
-    private int winCondition;
-    private int gameRound;
-
-    [SerializeField] private List<Node> nodeList;
-    [SerializeField] private List<Block> blockList;
+    
+    private List<Node> nodeList;
+    private List<Block> blockList;
 
     private Board board;
 
     private GameState gameState;
+
+    private int winCondition;
+    private int gameRound;
 
     private bool isMerging;
     private bool isMoving;
@@ -300,8 +300,6 @@ public partial class GameManager : MonoBehaviour
             }
             ChangeState(GameState.SpawningBlocks);
         });
-
-        //SoundManager.playmove();
     }
 
     private void MergeBlocks(Block baseBlock, Block mergingBlock)
@@ -347,8 +345,6 @@ public partial class GameManager : MonoBehaviour
         {
             Destroy(blockList[i].gameObject);
         }
-
-        //Destroy(board.gameObject);
 
         blockList.Clear();
         nodeList.Clear();

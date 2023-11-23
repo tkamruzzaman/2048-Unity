@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
 
 public class Board : MonoBehaviour
@@ -47,4 +46,6 @@ public class Board : MonoBehaviour
         && gridPosition.z >= 0
         && gridPosition.x < Width
         && gridPosition.z < Height;
+
+
 }
